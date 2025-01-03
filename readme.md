@@ -21,6 +21,8 @@ pip install aiohttp beautifulsoup4 requests
 
 ## Usage
 
+You can run everything from main.py by uncommenting lines.
+
 ### Basic Price Analysis
 
 ```python
