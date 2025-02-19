@@ -22,6 +22,8 @@ ENV/
 # Project specific
 .env
 *.log
+secrets.json
+config.json
 
 # System files
 .DS_Store
