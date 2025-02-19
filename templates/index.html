@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTG Card Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #e74c3c;
+        }
+
+        body {
+            background-color: #f5f6fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content {
+            flex: 1 0 auto;
+            padding-bottom: 3rem;
+        }
+
+        .main-content .container {
+            margin-bottom: 2rem;
+        }
+
+        .footer {
+            flex-shrink: 0;
+            margin-top: auto;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2rem 0;
+        }
+
+        .footer h5 {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .footer a {
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer a:hover {
+            color: var(--accent-color);
+        }
+
+        .footer .text-muted {
+            color: #bdc3c7 !important;
+        }
+
+        .navbar {
+            background-color: var(--primary-color);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.75rem;
+            padding: 1rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .search-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .result-card {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .result-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .result-card .card-body {
+            padding: 0.75rem;
+        }
+
+        .result-card .card-title {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-badge {
+            text-align: center;
+            padding: 0.25rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 5px;
+        }
+
+        .sort-controls {
+            background: white;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-success {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+        }
+
+        .btn-warning:hover {
+            background-color: #ffca2c;
+            border-color: #ffc720;
+            color: #000;
+        }
+
+        .update-section {
+            padding: 1rem;
+            margin-bottom: 0;
+        }
+
+        .update-section h3 {
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .status-container {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            display: none;
+        }
+
+        .progress {
+            height: 20px;
+            margin: 10px 0;
+        }
+
+        .status-text {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .update-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.875rem;
+            margin-left: 0.5rem;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .card-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .card-list-item {
+            display: grid;
+            grid-template-columns: 45px 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            background: white;
+            padding: 1rem;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .card-list-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        }
+
+        .card-thumbnail {
+            width: 45px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 3px;
+            cursor: default;
+        }
+
+        .card-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .card-name {
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .card-meta {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .price-tag {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .synergy-tag {
+            color: #2ecc71;
+        }
+
+        .underpriced-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+
+        .price-comparison {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            background: #f8f9fa;
+            padding: 0.75rem;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .price-comparison span {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .price-comparison strong {
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+
+        .price-comparison.savings strong {
+            color: #27ae60;
+            font-size: 1.2rem;
+        }
+
+        .results-container {
+            margin-top: 2rem;
+            width: 100%;
+        }
+
+        .results-container .card-list {
+            padding: 0;
+        }
+
+        /* Update card list item for underpriced cards */
+        .card-list-item.underpriced {
+            grid-column: 1 / -1; /* Span all columns */
+            display: grid;
+            grid-template-columns: 45px 2fr repeat(3, 1fr) auto;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .card-preview-container {
+            position: relative;
+        }
+
+        .underpriced .card-preview-container {
+            grid-column: 1 / 2;
+        }
+
+        .underpriced .card-name {
+            grid-column: 2 / 3;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .underpriced .price-comparison {
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+            text-align: center;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .underpriced .price-comparison span {
+            display: block;
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .underpriced .price-comparison strong {
+            display: block;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+
+        .underpriced .price-comparison.savings strong {
+            color: #27ae60;
+        }
+
+        .underpriced .card-actions {
+            grid-column: -2 / -1;
+            justify-self: end;
+            align-self: center;
+        }
+
+        .card-preview {
+            display: none;
+            position: absolute;
+            left: 60px;
+            top: -150px;
+            z-index: 9999;
+            pointer-events: none;
+            background: white;
+            padding: 4px;
+            border-radius: 4.75% / 3.5%;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            width: 300px;
+        }
+
+        .card-preview img {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            border-radius: 4.75% / 3.5%;
+            display: block;
+            object-fit: contain;
+        }
+
+        .card-thumbnail {
+            cursor: default;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <span class="navbar-brand">MTG Card Finder</span>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="alert" id="alertMessage" role="alert"></div>
+            
+            <!-- Status Container -->
+            <div id="statusContainer" class="status-container">
+                <h4 class="status-text">
+                    <span id="statusText">Processing...</span>
+                    <span id="statusBadge" class="status-badge bg-info">Initializing</span>
+                </h4>
+                <div class="progress">
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                         role="progressbar" style="width: 0%"></div>
+                </div>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div>Cards Found</div>
+                        <div id="cardsFound" class="stat-value">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>Processing Time</div>
+                        <div id="processingTime" class="stat-value">0s</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="search-card">
+                        <h2 class="mb-4">Commander Search</h2>
+                        <form id="commanderForm">
+                            <div class="mb-3">
+                                <label class="form-label">Budget Level</label>
+                                <div class="btn-group w-100" role="group" id="budgetToggle">
+                                    <input type="radio" class="btn-check" name="budgetLevel" id="budgetAny" value="" checked>
+                                    <label class="btn btn-outline-primary" for="budgetAny">Any</label>
+                                    
+                                    <input type="radio" class="btn-check" name="budgetLevel" id="budgetBudget" value="/budget">
+                                    <label class="btn btn-outline-primary" for="budgetBudget">Budget</label>
+                                    
+                                    <input type="radio" class="btn-check" name="budgetLevel" id="budgetExpensive" value="/expensive">
+                                    <label class="btn btn-outline-primary" for="budgetExpensive">Expensive</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="commanderUrl" class="form-label">EDHREC Commander URL</label>
+                                <input type="url" class="form-control" id="commanderUrl" required 
+                                       placeholder="https://edhrec.com/commanders/your-commander">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="maxPrice" class="form-label">Max Price (NOK)</label>
+                                        <input type="number" class="form-control" id="maxPrice" value="8">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="limit" class="form-label">Card Limit</label>
+                                        <input type="number" class="form-control" id="limit" value="25">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Search</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="search-card">
+                        <h2 class="mb-4">Underpriced Cards</h2>
+                        <button id="underpricedBtn" class="btn btn-success w-100 mb-4">Find Underpriced Cards</button>
+                        
+                        <div class="update-section">
+                            <h3 class="h5 mb-3">Update Databases</h3>
+                            <div class="d-grid gap-2">
+                                <button id="updateOutland" class="btn btn-light">Update Outland Database</button>
+                                <button id="updateScryfall" class="btn btn-light">Update Scryfall Prices</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="loading" class="loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+
+            <div id="results" class="results-container"></div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row py-4">
+                <div class="col-md-4">
+                    <h5>About MTG Card Finder</h5>
+                    <p class="text-muted">
+                        A tool to find affordable Magic: The Gathering cards from Norwegian retailers, 
+                        with price comparisons and EDHREC integration.
+                    </p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Useful Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="https://www.outland.no/" target="_blank">Outland</a></li>
+                        <li><a href="https://edhrec.com/" target="_blank">EDHREC</a></li>
+                        <li><a href="https://scryfall.com/" target="_blank">Scryfall</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Database Status</h5>
+                    <div class="text-muted">
+                        <p>
+                            <strong>Outland Database:</strong><br>
+                            Last updated: <span id="outlandUpdate">Loading...</span><br>
+                            Cards: <span id="outlandCount">Loading...</span>
+                        </p>
+                        <p>
+                            <strong>Scryfall Database:</strong><br>
+                            Last updated: <span id="scryfallUpdate">Loading...</span><br>
+                            Cards (over 1 USD): <span id="scryfallCount">Loading...</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let startTime;
+        let statusUpdateInterval;
+
+        function updateStatus(text, type = 'info', progress = null) {
+            const container = document.getElementById('statusContainer');
+            const statusText = document.getElementById('statusText');
+            const statusBadge = document.getElementById('statusBadge');
+            const progressBar = document.getElementById('progressBar');
+            
+            container.style.display = 'block';
+            statusText.textContent = text;
+            statusBadge.className = `status-badge bg-${type}`;
+            
+            if (progress !== null) {
+                progressBar.style.width = `${progress}%`;
+                progressBar.setAttribute('aria-valuenow', progress);
+            }
+        }
+
+        function updateStats(cardsFound) {
+            document.getElementById('cardsFound').textContent = cardsFound;
+            
+            const elapsed = Math.round((Date.now() - startTime) / 1000);
+            document.getElementById('processingTime').textContent = `${elapsed}s`;
+        }
+
+        async function searchCommander() {
+            const url = document.getElementById('commanderUrl').value;
+            const maxPrice = parseFloat(document.getElementById('maxPrice').value);
+            const limit = parseInt(document.getElementById('limit').value);
+            
+            startTime = Date.now();
+            updateStatus('Searching for commander cards...', 'info', 0);
+            
+            try {
+                const response = await fetch('/search_commander', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ commander_url: url, max_price: maxPrice, limit: limit })
+                });
+                
+                const data = await response.json();
+                if (data.error) {
+                    updateStatus(`Error: ${data.error}`, 'danger');
+                    return;
+                }
+                
+                updateStatus(`Found ${data.length} cards`, 'success', 100);
+                updateStats(data.length);
+                displayResults(data);
+                
+            } catch (error) {
+                updateStatus(`Error: ${error.message}`, 'danger');
+            }
+        }
+
+        // Add this function to check database age
+        function getDaysSinceUpdate(dateString) {
+            if (!dateString) return Infinity;
+            const updateDate = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - updateDate);
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        // Update the database update function
+        async function updateDatabase(type) {
+            try {
+                // Get current database status
+                const response = await fetch('/database_status');
+                const status = await response.json();
+                
+                // Check if we have valid status data
+                if (status && (type === 'outland' || type === 'scryfall')) {
+                    const dbData = type === 'outland' ? status.outland : status.scryfall;
+                    if (dbData && dbData.last_updated) {
+                        const daysSinceUpdate = getDaysSinceUpdate(dbData.last_updated);
+                        if (daysSinceUpdate < 7) {
+                            const proceed = confirm(
+                                `Warning: The ${type} database was updated ${daysSinceUpdate} days ago.\n` +
+                                'Are you sure you want to update it again?'
+                            );
+                            if (!proceed) return;
+                        }
+                    }
+                }
+
+                // Proceed with update
+                startTime = Date.now();
+                updateStatus(`Updating ${type} database...`, 'info', 0);
+                
+                const updateResponse = await fetch('/update_database', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: type.toLowerCase() })
+                });
+                
+                const data = await updateResponse.json();
+                if (data.error) {
+                    updateStatus(`Error: ${data.error}`, 'danger');
+                    return;
+                }
+                
+                updateStatus(data.message, 'success', 100);
+                await updateDatabaseStatus();
+                await updateButtonStyles();
+                
+            } catch (error) {
+                updateStatus(`Error: ${error.message}`, 'danger');
+            }
+        }
+
+        // Update the button styles based on database age
+        function updateButtonStyles() {
+            fetch('/database_status')
+                .then(response => response.json())
+                .then(data => {
+                    const outlandDays = getDaysSinceUpdate(data.outland.last_updated);
+                    const scryfallDays = getDaysSinceUpdate(data.scryfall.last_updated);
+
+                    const outlandBtn = document.getElementById('updateOutland');
+                    const scryfallBtn = document.getElementById('updateScryfall');
+
+                    // Add warning class and tooltip for recent updates
+                    if (outlandDays < 7) {
+                        outlandBtn.classList.add('btn-warning');
+                        outlandBtn.title = `Last updated ${outlandDays} days ago`;
+                    } else {
+                        outlandBtn.classList.remove('btn-warning');
+                        outlandBtn.title = '';
+                    }
+
+                    if (scryfallDays < 7) {
+                        scryfallBtn.classList.add('btn-warning');
+                        scryfallBtn.title = `Last updated ${scryfallDays} days ago`;
+                    } else {
+                        scryfallBtn.classList.remove('btn-warning');
+                        scryfallBtn.title = '';
+                    }
+                });
+        }
+
+        function showAlert(message, type = 'success') {
+            const alert = document.getElementById('alertMessage');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.style.display = 'block';
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 3000);
+        }
+
+        document.getElementById('updateOutland').addEventListener('click', () => updateDatabase('outland'));
+        document.getElementById('updateScryfall').addEventListener('click', () => updateDatabase('scryfall'));
+
+        document.getElementById('commanderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            
+            loading.style.display = 'block';
+            results.innerHTML = '';
+
+            try {
+                // Get the base URL and remove any existing budget suffix
+                let url = document.getElementById('commanderUrl').value.replace(/\/(budget|expensive)$/, '');
+                
+                // Add the selected budget level
+                const budgetLevel = document.querySelector('input[name="budgetLevel"]:checked').value;
+                url += budgetLevel;
+                
+                const maxPrice = document.getElementById('maxPrice').value;
+                const limit = document.getElementById('limit').value;
+
+                const response = await fetch('/search_commander', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        commander_url: url,
+                        max_price: maxPrice,
+                        limit: limit
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.error) {
+                    results.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                    return;
+                }
+                
+                displayResults(data);
+            } catch (error) {
+                console.error('Error:', error);
+                results.innerHTML = '<div class="alert alert-danger">An error occurred</div>';
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+
+        document.getElementById('underpricedBtn').addEventListener('click', async () => {
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            
+            loading.style.display = 'block';
+            results.innerHTML = '';
+
+            try {
+                const response = await fetch('/underpriced');
+                const data = await response.json();
+                displayUnderpricedResults(data);
+            } catch (error) {
+                console.error('Error:', error);
+                results.innerHTML = '<div class="alert alert-danger">An error occurred</div>';
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+
+        async function getScryFallImage(cardName) {
+            try {
+                // Clean up the card name and encode it
+                const cleanName = cardName.trim()
+                    .replace(/\s*\/\/\s*/g, '') // Remove any '//' from split cards
+                    .replace(/['"]/g, ''); // Remove quotes
+                const encodedName = encodeURIComponent(cleanName);
+                
+                const url = `https://api.scryfall.com/cards/named?fuzzy=${encodedName}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    console.error(`Scryfall API error: ${response.status}`);
+                    return null;
+                }
+
+                const data = await response.json();
+                let imageUrl = null;
+                
+                // Handle different card layouts
+                if (data.layout === 'transform' || data.layout === 'modal_dfc') {
+                    imageUrl = data.card_faces[0].image_uris?.large;
+                } else if (data.layout === 'split') {
+                    imageUrl = data.image_uris?.large;
+                } else {
+                    imageUrl = data.image_uris?.large;
+                }
+
+                if (!imageUrl) {
+                    console.error('No image URL found for:', cardName);
+                    return null;
+                }
+
+                return imageUrl;
+
+            } catch (error) {
+                console.error('Error fetching Scryfall image for', cardName, ':', error);
+                return null;
+            }
+        }
+
+        function displayResults(cards) {
+            const results = document.getElementById('results');
+            if (cards.length === 0) {
+                results.innerHTML = '<div class="alert alert-info">No cards found matching your criteria.</div>';
+                return;
+            }
+
+            const headerHtml = `
+                <div class="sort-controls">
+                    <h3 class="m-0">Found ${cards.length} cards</h3>
+                    <div class="d-flex align-items-center gap-3">
+                        <label for="sortSelect">Sort by:</label>
+                        <select id="sortSelect" onchange="sortCards(this.value)" 
+                                class="form-select form-select-sm" style="width: auto">
+                            <option value="synergy">Synergy</option>
+                            <option value="price">Price</option>
+                            <option value="name">Name</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+
+            const cardsHtml = `
+                <div class="card-list">
+                    ${cards.map(card => `
+                        <div class="card-list-item" data-synergy="${card.synergy}" data-price="${card.price}">
+                            <div class="card-preview-container">
+                                <img src="${card.image_url}" alt="${card.name}" class="card-thumbnail" 
+                                     data-card-name="${card.name}">
+                                <div class="card-preview">
+                                    <img src="" alt="${card.name} preview" loading="lazy">
+                                </div>
+                            </div>
+                            <div class="card-details">
+                                <div class="card-name">${card.name}</div>
+                                <div class="card-meta">
+                                    <span class="price-tag">${card.price} NOK</span>
+                                    <span class="synergy-tag">Synergy: ${card.synergy}%</span>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <a href="${card.store_url}" target="_blank" class="btn btn-sm btn-primary">Buy</a>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            results.innerHTML = headerHtml + cardsHtml;
+
+            // Update the hover handlers in displayResults
+            document.querySelectorAll('.card-preview-container').forEach(container => {
+                const thumbnail = container.querySelector('.card-thumbnail');
+                const preview = container.querySelector('.card-preview');
+                const previewImg = preview.querySelector('img');
+
+                container.addEventListener('mouseenter', async () => {
+                    if (!previewImg.src || previewImg.src === window.location.href) {
+                        const cardName = thumbnail.dataset.cardName;
+                        const scryFallImage = await getScryFallImage(cardName);
+                        if (scryFallImage) {
+                            previewImg.src = scryFallImage;
+                            previewImg.alt = cardName;
+                        }
+                    }
+                    preview.style.display = 'block';
+                });
+
+                container.addEventListener('mouseleave', () => {
+                    preview.style.display = 'none';
+                });
+            });
+
+            sortCards('synergy');
+        }
+
+        function sortCards(criterion) {
+            const results = document.getElementById('results');
+            const cards = Array.from(results.getElementsByClassName('card-list-item'));
+            const container = results.querySelector('.card-list');
+
+            cards.sort((a, b) => {
+                switch(criterion) {
+                    case 'synergy':
+                        return parseFloat(b.dataset.synergy) - parseFloat(a.dataset.synergy);
+                    case 'price':
+                        return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+                    case 'name':
+                        return a.querySelector('.card-name').textContent.localeCompare(
+                            b.querySelector('.card-name').textContent
+                        );
+                    default:
+                        return 0;
+                }
+            });
+
+            container.innerHTML = '';
+            cards.forEach(card => container.appendChild(card));
+        }
+
+        async function displayUnderpricedResults(cards) {
+            const results = document.getElementById('results');
+            if (cards.length === 0) {
+                results.innerHTML = '<div class="alert alert-info">No underpriced cards found.</div>';
+                return;
+            }
+
+            const headerHtml = `
+                <div class="sort-controls">
+                    <h3 class="m-0">Found ${cards.length} underpriced cards</h3>
+                    <div class="d-flex align-items-center gap-3">
+                        <label for="sortSelect">Sort by:</label>
+                        <select id="sortSelect" onchange="sortUnderpricedCards(this.value)" 
+                                class="form-select form-select-sm" style="width: auto">
+                            <option value="savings">Savings</option>
+                            <option value="price">Price</option>
+                            <option value="name">Name</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+
+            // Pre-fetch Scryfall images
+            const cardsWithImages = await Promise.all(cards.map(async card => {
+                const scryFallImage = await getScryFallImage(card.name);
+                return {
+                    ...card,
+                    scryfall_image: scryFallImage
+                };
+            }));
+
+            const cardsHtml = `
+                <div class="card-list">
+                    ${cardsWithImages.map(card => `
+                        <div class="card-list-item underpriced" 
+                             data-savings="${card.price_difference_usd}" 
+                             data-price="${card.outland_price_nok}">
+                            <div class="card-preview-container">
+                                <img src="${card.scryfall_image || ''}" alt="${card.name}" class="card-thumbnail" 
+                                     data-card-name="${card.name}">
+                                <div class="card-preview">
+                                    <img src="${card.scryfall_image || ''}" alt="${card.name} preview" loading="lazy">
+                                </div>
+                            </div>
+                            <div class="card-name">${card.name}</div>
+                            <div class="price-comparison">
+                                <span>Outland Price</span>
+                                <strong>${card.outland_price_nok} NOK</strong>
+                            </div>
+                            <div class="price-comparison">
+                                <span>Scryfall Price</span>
+                                <strong>$${card.lowest_scryfall_price_usd.toFixed(2)}</strong>
+                            </div>
+                            <div class="price-comparison savings">
+                                <span>Potential Savings</span>
+                                <strong>$${card.price_difference_usd.toFixed(2)}</strong>
+                            </div>
+                            <div class="card-actions">
+                                <a href="${card.store_url}" target="_blank" class="btn btn-primary">Buy</a>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            results.innerHTML = headerHtml + cardsHtml;
+
+            // Add hover handlers for underpriced cards
+            document.querySelectorAll('.card-preview-container').forEach(container => {
+                const thumbnail = container.querySelector('.card-thumbnail');
+                const preview = container.querySelector('.card-preview');
+                const previewImg = preview.querySelector('img');
+
+                container.addEventListener('mouseenter', async () => {
+                    if (!previewImg.src || previewImg.src === window.location.href) {
+                        const cardName = thumbnail.dataset.cardName;
+                        const scryFallImage = await getScryFallImage(cardName);
+                        if (scryFallImage) {
+                            previewImg.src = scryFallImage;
+                            previewImg.alt = cardName;
+                        }
+                    }
+                    preview.style.display = 'block';
+                });
+
+                container.addEventListener('mouseleave', () => {
+                    preview.style.display = 'none';
+                });
+            });
+
+            sortUnderpricedCards('savings');
+        }
+
+        function sortUnderpricedCards(criterion) {
+            const results = document.getElementById('results');
+            const cards = Array.from(results.getElementsByClassName('card-list-item'));
+            const container = results.querySelector('.card-list');
+
+            cards.sort((a, b) => {
+                switch(criterion) {
+                    case 'savings':
+                        return parseFloat(b.dataset.savings) - parseFloat(a.dataset.savings);
+                    case 'price':
+                        return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+                    case 'name':
+                        return a.querySelector('.card-name').textContent.localeCompare(
+                            b.querySelector('.card-name').textContent
+                        );
+                    default:
+                        return 0;
+                }
+            });
+
+            container.innerHTML = '';
+            cards.forEach(card => container.appendChild(card));
+        }
+
+        // Add this function to update the database status
+        async function updateDatabaseStatus() {
+            try {
+                const response = await fetch('/database_status');
+                const data = await response.json();
+                
+                console.log('Database status:', data); // Debug log
+                
+                // Format dates with more explicit parsing
+                const outlandDate = data.outland.last_updated ? 
+                    new Date(data.outland.last_updated).toLocaleString('en-GB', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) : 'Never';
+                    
+                const scryfallDate = data.scryfall.last_updated ? 
+                    new Date(data.scryfall.last_updated).toLocaleString('en-GB', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) : 'Never';
+                
+                // Update the footer information
+                document.getElementById('outlandUpdate').textContent = outlandDate;
+                document.getElementById('outlandCount').textContent = data.outland.card_count;
+                document.getElementById('scryfallUpdate').textContent = scryfallDate;
+                document.getElementById('scryfallCount').textContent = data.scryfall.card_count;
+            } catch (error) {
+                console.error('Error fetching database status:', error);
+            }
+        }
+
+        // Update the DOMContentLoaded event handler
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDatabaseStatus();
+            updateButtonStyles();
+        });
+    </script>
+
+    <!-- Add Bootstrap JS before closing body tag -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

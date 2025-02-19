@@ -10,14 +10,14 @@ def find_underpriced_cards(scryfall_data_path="card_prices.json", outland_data_p
 
     underpriced_cards = []
 
-    for outland_card in outland_data:
+    for outland_card in outland_data['cards']:
         card_name = outland_card['name']
         card_price_nok = outland_card['price']
 
-        lowest_scryfall_price = float('inf')  # Set initial lowest price to infinity
+        lowest_scryfall_price = float('inf')
 
         # Check if the card exists in Scryfall data and find the lowest Scryfall price
-        for card in scryfall_data:
+        for card in scryfall_data['cards']:
             if card['name'] == card_name:
                 # Update lowest price using USD if available
                 if card['prices']['usd'] and float(card['prices']['usd']) < lowest_scryfall_price:
@@ -25,15 +25,16 @@ def find_underpriced_cards(scryfall_data_path="card_prices.json", outland_data_p
 
                 # Update lowest price using EUR if available
                 if card['prices']['eur'] and float(card['prices']['eur']) * 1.05 < lowest_scryfall_price:
-                    lowest_scryfall_price = float(card['prices']['eur']) * 1.05  # Convert EUR to USD
-        # Convert NOK to USD using a specific conversion rate (1 NOK = 0.09 USD)
+                    lowest_scryfall_price = float(card['prices']['eur']) * 1.05
+
+        # Convert NOK to USD using a specific conversion rate
         converted_price_usd = card_price_nok * 0.09
 
         # Calculate the price difference in USD
         price_difference = lowest_scryfall_price - converted_price_usd
 
-        # Check if the Outland price is significantly lower than the lowest Scryfall price
-        if price_difference > threshold and price_difference != float('inf') and card_price_nok > 5:  # Adjust this threshold as needed
+        # Check if the Outland price is significantly lower
+        if price_difference > threshold and price_difference != float('inf') and card_price_nok > 5:
             underpriced_cards.append({
                 'name': card_name,
                 'price_difference_usd': price_difference,
@@ -42,7 +43,7 @@ def find_underpriced_cards(scryfall_data_path="card_prices.json", outland_data_p
                 'store_url': outland_card['store_url']
             })
 
-    # Sort underpriced cards based on the price difference in ascending order
+    # Sort by price difference
     underpriced_cards.sort(key=lambda x: x['price_difference_usd'])
     
     

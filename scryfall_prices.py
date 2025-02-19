@@ -1,5 +1,6 @@
 import requests
 import json
+from datetime import datetime
 
 def save_cards_to_file(cards, filename='card_prices.json'):
     with open(filename, 'w') as file:
@@ -9,7 +10,7 @@ def fetch_cards_over_one_dollar():
     url = 'https://api.scryfall.com/cards/search?q=usd>0.1'
     cards_over_one_dollar = []
 
-    # Fetching data from Scryfall in pages (as they paginate their API response)
+    # Fetching data from Scryfall in pages
     has_more = True
     next_page = url
 
@@ -24,24 +25,26 @@ def fetch_cards_over_one_dollar():
                 }
                 for card in data.get('data', [])
             ]
-            # Filter out cards without USD prices or prices less than $1
             
+            # Filter cards with USD prices over $1
             for card in cards:
                 if 'usd' in card['prices'] and card['prices']['usd'] is not None:
                     if float(card['prices']['usd']) > 1.0:
                         cards_over_one_dollar.append(card)
-                    
-
-
 
             # Check if there are more pages
             has_more = data.get('has_more', False)
             next_page = data.get('next_page')
 
-            # Print progress
-            print(f"Fetched {len(cards_over_one_dollar)} cards over one dollar")
-            
-            save_cards_to_file(cards_over_one_dollar)
-
+    # Create metadata structure
+    metadata = {
+        "last_updated": datetime.now().isoformat(),
+        "card_count": len(cards_over_one_dollar),
+        "cards": cards_over_one_dollar
+    }
+    
+    # Save with metadata
+    with open('card_prices.json', 'w') as f:
+        json.dump(metadata, f, indent=2)
 
     return cards_over_one_dollar
