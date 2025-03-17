@@ -262,12 +262,6 @@ def health_check():
         if scryfall_data_path.exists():
             scryfall_data_exists = True
         
-        # Log some test messages at different levels to test logging
-        logger.debug("This is a DEBUG message from the health check")
-        logger.info("This is an INFO message from the health check")
-        logger.warning("This is a WARNING message from the health check")
-        logger.error("This is an ERROR message from the health check (test only)")
-
         # Get next scheduled database update
         next_update = utils.get_next_sunday_1am()
         

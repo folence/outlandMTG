@@ -249,3 +249,53 @@ This project is available under the MIT License. See the [LICENSE](LICENSE) file
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for a list of changes and version history.
+
+## Unraid Setup
+
+This application can be run as a Docker container in Unraid. Here's how to set it up:
+
+### Using Docker Compose Template
+
+1. Install the Docker Compose Manager plugin in Unraid
+2. Add this repository as a template
+3. Deploy using the template
+
+### Manual Setup
+
+1. **Add a new Docker container with these settings**:
+   - **Repository**: `ghcr.io/folence/outlandmtg:latest` or specify your own built image
+   - **Network Type**: Bridge
+   - **Port**: 5000:5000
+   - **Appdata Path**: `/mnt/user/appdata/outlandmtg/`
+
+2. **Configure environment variables**:
+   - `TZ=Europe/Oslo` (adjust to your timezone)
+   - `PUID=99` (your Unraid user ID)
+   - `PGID=100` (your Unraid group ID)
+   - `LOG_LEVEL=INFO`
+   - `CONSOLE_LOG_LEVEL=WARNING`
+
+3. **Add volume mappings**:
+   - `/mnt/user/appdata/outlandmtg/data:/app/data`
+
+### Accessing the Application
+
+After starting the container, the application will be available at:
+http://your-unraid-ip:5000
+
+### Notes for Unraid Users
+
+- The container will automatically update databases on first run or if they're more than 14 days old
+- Logs are stored in `/mnt/user/appdata/outlandmtg/data/logs/`
+- Weekly database updates happen every Sunday at 1:00 AM
+- For troubleshooting, check the container logs or the application logs
+
+### Permissions
+
+If you encounter permission issues, make sure the `PUID` and `PGID` values match your user. You can find these values by running:
+
+```bash
+id username
+```
+
+Replace `username` with your Unraid username.

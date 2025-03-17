@@ -1,13 +1,13 @@
-version: '3.8'
-
 services:
-  web:
-    build: .
+  outlandmtg:
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: outlandmtg
     ports:
       - "5000:5000"
     volumes:
-      - /mnt/user/appdata/outlandmtg/data:/app/data
+      - /mnt/user/appdata/outlandMTG/data:/app/data
     environment:
       - FLASK_APP=app.py
       - FLASK_ENV=production
@@ -17,13 +17,17 @@ services:
       - CONSOLE_LOG_LEVEL=WARNING
       - PUID=99
       - PGID=100
+      - VIRTUAL_HOST=outlandmtg.local
+      - VIRTUAL_PORT=5000
     restart: unless-stopped
+    networks:
+      - proxynet
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
-      interval: 30s
+      interval: 60s
       timeout: 10s
       retries: 3
-      start_period: 15s
+      start_period: 30s
     logging:
       driver: "json-file"
       options:
@@ -32,4 +36,8 @@ services:
     labels:
       - "com.unraid.container.icon=https://raw.githubusercontent.com/mtgjson/mtgdata/main/mtgdata/assets/mtg.png"
       - "com.unraid.container.name=Outland MTG Finder"
-      - "com.unraid.container.description=MTG card finder for Outland.no with EDHRec integration" 
+      - "com.unraid.container.description=MTG card finder for Outland.no with EDHRec integration"
+
+networks:
+  proxynet:
+    external: true 
