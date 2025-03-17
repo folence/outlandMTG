@@ -3,10 +3,11 @@ version: '3.8'
 services:
   web:
     build: .
+    container_name: outlandmtg
     ports:
       - "5000:5000"
     volumes:
-      - ./data:/app/data
+      - /mnt/user/appdata/outlandmtg/data:/app/data
     environment:
       - FLASK_APP=app.py
       - FLASK_ENV=production
@@ -14,6 +15,8 @@ services:
       - PYTHONUNBUFFERED=1
       - LOG_LEVEL=INFO
       - CONSOLE_LOG_LEVEL=WARNING
+      - PUID=99
+      - PGID=100
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
@@ -25,4 +28,8 @@ services:
       driver: "json-file"
       options:
         max-size: "10m"
-        max-file: "3" 
+        max-file: "3"
+    labels:
+      - "com.unraid.container.icon=https://raw.githubusercontent.com/mtgjson/mtgdata/main/mtgdata/assets/mtg.png"
+      - "com.unraid.container.name=Outland MTG Finder"
+      - "com.unraid.container.description=MTG card finder for Outland.no with EDHRec integration" 

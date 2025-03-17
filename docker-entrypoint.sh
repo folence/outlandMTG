@@ -1,9 +1,21 @@
 #!/bin/bash
 set -e
 
+# Apply user/group permissions if specified
+if [ ! -z ${PUID} ] && [ ! -z ${PGID} ]; then
+    echo "Setting permissions based on PUID: ${PUID} and PGID: ${PGID}"
+    
+    # Create user and group if they don't exist
+    groupmod -o -g "$PGID" www-data || true
+    usermod -o -u "$PUID" www-data || true
+    
+    # Update permissions of app directories
+    chown -R www-data:www-data /app/data /app/data/logs || true
+fi
+
 # Start cron
 echo "Starting cron service..."
-service cron start
+service cron start || true
 
 # Create data and logs directories if they don't exist
 mkdir -p /app/data/logs
