@@ -43,6 +43,7 @@ htmlcov/
 
 # Docker
 .docker/
+himmel/
 
 # Local development
 .env.local

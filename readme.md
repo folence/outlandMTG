@@ -27,53 +27,61 @@ A web application to help Magic: The Gathering players find budget cards from Ou
 ### Using Docker (Recommended)
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/folence/outlandMTG.git
    cd outlandMTG
    ```
 
 2. Build and run with Docker:
+
    ```bash
    docker build -t outland-mtg .
    docker run -p 5000:5000 -v $(pwd)/data:/app/data outland-mtg
    ```
 
-3. Access the application at: http://localhost:5000
+3. Access the application at: <http://localhost:5000>
 
 ### Manual Setup
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/folence/outlandMTG.git
    cd outlandMTG
    ```
 
 2. Create and activate a virtual environment:
+
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    ```
 
 3. Install dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
 
 4. Run the application:
+
    ```bash
    python app.py
    ```
 
-5. Access the application at: http://localhost:5000
+5. Access the application at: <http://localhost:5000>
 
 ## Development Setup
 
 1. Install development dependencies:
+
    ```bash
    pip install -r test_requirements.txt
    ```
 
 2. Run tests:
+
    ```bash
    # Run all tests
    pytest
@@ -125,7 +133,7 @@ The application is designed to work on both Windows and Unix-based systems:
 
 The `utils.py` module provides centralized utilities for the entire application:
 
-- **Path Management**: 
+- **Path Management**:
   - Platform-independent path handling for data, logs, and configuration
   - Automatic directory creation when needed
   - Functions like `get_data_dir()`, `get_log_dir()`, and `get_log_file()`
@@ -153,10 +161,12 @@ The `utils.py` module provides centralized utilities for the entire application:
 ## Data Storage
 
 Database files are stored in the data directory:
+
 - Windows: `.\data\` (relative to the application directory)
 - Linux/Docker: `/app/data/` (when running in Docker)
 
 The app includes:
+
 - `scraped_cards.json`: Outland.no inventory data
 - `card_prices.json`: Scryfall price data
 - `LegendaryCreatures.json`: list of legendary creatures
@@ -183,10 +193,12 @@ python update_databases.py scryfall
 ## Logs
 
 Logs are stored in the logs directory:
+
 - Windows: `.\data\logs\` (relative to the application directory)
 - Linux/Docker: `/app/data/logs/` (when running in Docker)
 
 Log files include:
+
 - `app.log`: Main application logs
 - `outlandMTG_database.log`: Outland database scraper logs
 - `scryfall_prices.log`: Scryfall price fetcher logs
@@ -223,6 +235,7 @@ The application uses a centralized logging configuration with the following feat
 - **Module-specific Logs**: Each component writes to its own log file for easier troubleshooting
 
 You can adjust logging levels in `log_config.py` if needed:
+
 - `DEFAULT_LOG_LEVEL`: Controls logging detail in files (default: INFO)
 - `DEFAULT_CONSOLE_LEVEL`: Controls logging detail in console (default: WARNING)
 
@@ -281,7 +294,7 @@ This application can be run as a Docker container in Unraid. Here's how to set i
 ### Accessing the Application
 
 After starting the container, the application will be available at:
-http://your-unraid-ip:5000
+<http://your-unraid-ip:5000>
 
 ### Notes for Unraid Users
 

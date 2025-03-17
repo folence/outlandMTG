@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [1.1.0] - 2025-03-XX
 
 ### Added
+
 - Comprehensive test suite with pytest
 - Centralized logging system with rotation
 - Health check endpoint
@@ -17,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Coverage reporting for tests
 
 ### Changed
+
 - Replaced print statements with proper logging
 - Improved error handling across all modules
 - Enhanced database update process with progress tracking
@@ -26,6 +28,7 @@ All notable changes to this project will be documented in this file.
 - Enhanced logging configuration with separate log files per module
 
 ### Fixed
+
 - Database update process reliability
 - Error handling in API endpoints
 - Log file rotation issues
@@ -34,17 +37,20 @@ All notable changes to this project will be documented in this file.
 - Database status reporting
 
 ### Removed
+
 - Deprecated print statements
 - Redundant error handling code
 - Outdated documentation
 
 ### Security
+
 - Added rate limiting to prevent abuse
 - Improved error message handling to prevent information leakage
 - Better handling of sensitive data in logs
 
 ## [1.0.0] - Initial Release
+
 - Basic EDHRec integration
 - Outland.no card scraping
 - Scryfall price comparison
-- Simple web interface 
+- Simple web interface
