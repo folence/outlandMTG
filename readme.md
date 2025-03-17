@@ -16,6 +16,33 @@ A web application to help Magic: The Gathering players find budget cards from Ou
 - **Cross-Platform Support**: Works on both Windows and Unix-based systems
 - **Utility Module**: Centralized utilities for path handling and common operations
 
+## Front-End Features
+
+- **Responsive Design**: Fully responsive interface that adapts to desktop, tablet, and mobile devices
+- **Real-Time Database Status**: Dashboard showing current database status, age, and update schedule
+- **Interactive Card Search**: 
+  - Auto-complete commander search with suggestions as you type
+  - Budget filter with customizable price thresholds
+  - Clear price guidance (<50 NOK: Budget, 50-100 NOK: Standard, >100 NOK: High-end)
+- **Card Visualization**:
+  - Card images loaded on-demand from Scryfall API
+  - Hover-to-preview card images in larger format
+  - Rate-limited API requests to avoid Scryfall throttling
+- **Search Results**:
+  - Card grid with synergy percentage from EDHRec
+  - Direct "Buy at Outland" links for each card
+  - Pagination with "Load More" functionality
+  - Price and synergy sorting
+- **Underpriced Cards**:
+  - Highlights cards with significant price differences
+  - Shows savings amount and price ratio compared to international market
+  - Same visual card preview functionality as commander search
+- **Modern UI Components**:
+  - Font Awesome icons for improved visual cues
+  - Loading spinners and status indicators
+  - Consistent color scheme and styling
+  - Mobile-optimized touch targets and layout
+
 ## Prerequisites
 
 - Python 3.9 or higher
@@ -110,6 +137,11 @@ outlandMTG/
 ├── log_config.py          # Logging configuration
 ├── view_logs.py           # Log viewing utility
 ├── utils.py               # Utility functions and path handling
+├── static/                # Static assets
+│   ├── style.css          # CSS styling
+│   └── favicon.ico        # Application icon
+├── templates/             # HTML templates
+│   └── index.html         # Main application page
 ├── tests/                 # Test suite
 ├── data/                  # Data directory (created on first run)
 │   └── logs/              # Application logs
