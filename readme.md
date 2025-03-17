@@ -1,75 +1,251 @@
-# MTG Price Tools
+# Outland MTG Card Finder
 
-A web application for finding Magic: The Gathering card deals and commander recommendations, with a focus on Norwegian retailers (Outland.no). Features EDHRec integration for commander recommendations and price comparison with international market prices.
+A web application to help Magic: The Gathering players find budget cards from Outland.no and identify underpriced cards comparing Outland.no prices with Scryfall's international market prices.
 
 ## Features
 
-### Commander Search
-- Search for commander recommendations from EDHRec
-- Filter by budget level (Any/Budget/Expensive)
-- Set maximum price in NOK
-- Set card limit for search results
-- Shows synergy percentage from EDHRec
-- Card previews on hover
-- Sort by synergy, price, or name
-- Direct links to purchase cards
+- **EDHRec Integration**: Search for commander recommendations from EDHRec and find those cards at Outland below your specified price
+- **Underpriced Card Search**: Find cards that are significantly cheaper at Outland compared to international market prices
+- **Automated Database Updates**: Databases automatically update weekly (every Sunday at 1:00 AM)
+- **Docker Support**: Easy deployment with Docker
+- **Improved Logging System**: Comprehensive logging with rotation and minimal terminal output
+- **Test Suite**: Comprehensive test coverage for core functionality
+- **Health Monitoring**: Built-in health check endpoint and database status monitoring
+- **Rate Limiting**: Protection against API abuse
+- **Error Handling**: Comprehensive error handling and user feedback
+- **Cross-Platform Support**: Works on both Windows and Unix-based systems
+- **Utility Module**: Centralized utilities for path handling and common operations
 
-### Price Analysis
-- Scrapes all MTG singles from Outland.no
-- Fetches current market prices from Scryfall
-- Identifies underpriced cards by comparing local prices to international market prices
-- Shows potential savings in USD
-- Sort underpriced cards by savings, price, or name
+## Prerequisites
 
-### Database Management
-- Automatic database updates for both Outland and Scryfall prices
-- Warning indicators for outdated databases
-- Status display showing last update time and card counts
+- Python 3.9 or higher
+- Docker (optional, for containerized deployment)
+- Git
 
-## Setup
+## Quick Start
 
-1. Install required packages:
-```bash
-pip install flask aiohttp beautifulsoup4 requests colorama
+### Using Docker (Recommended)
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/folence/outlandMTG.git
+   cd outlandMTG
+   ```
+
+2. Build and run with Docker:
+   ```bash
+   docker build -t outland-mtg .
+   docker run -p 5000:5000 -v $(pwd)/data:/app/data outland-mtg
+   ```
+
+3. Access the application at: http://localhost:5000
+
+### Manual Setup
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/folence/outlandMTG.git
+   cd outlandMTG
+   ```
+
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Run the application:
+   ```bash
+   python app.py
+   ```
+
+5. Access the application at: http://localhost:5000
+
+## Development Setup
+
+1. Install development dependencies:
+   ```bash
+   pip install -r test_requirements.txt
+   ```
+
+2. Run tests:
+   ```bash
+   # Run all tests
+   pytest
+
+   # Run tests with coverage report
+   pytest --cov=.
+
+   # Run only unit tests
+   pytest -m unit
+
+   # Run only integration tests
+   pytest -m integration
+
+   # Skip slow tests
+   pytest -m "not slow"
+   ```
+
+## Project Structure
+
+```
+outlandMTG/
+├── app.py                 # Main application entry point
+├── EDH_search.py          # EDHRec integration
+├── underpriced_cards.py   # Price comparison logic
+├── update_databases.py    # Database update script
+├── log_config.py          # Logging configuration
+├── view_logs.py           # Log viewing utility
+├── utils.py               # Utility functions and path handling
+├── tests/                 # Test suite
+├── data/                  # Data directory (created on first run)
+│   └── logs/              # Application logs
+├── requirements.txt       # Production dependencies
+├── test_requirements.txt  # Development dependencies
+├── Dockerfile             # Docker configuration
+├── docker-compose.yml     # Docker Compose configuration
+└── README.md              # This file
 ```
 
-2. Clone the repository and navigate to the project directory.
+## Cross-Platform Support
 
-3. Run the Flask application:
+The application is designed to work on both Windows and Unix-based systems:
+
+- **Path Handling**: Uses platform-independent path handling via Python's `pathlib`
+- **Log Viewing**: Adapts to the platform when viewing logs (PowerShell on Windows, cat/tail on Unix)
+- **Data Storage**: Automatically uses the appropriate data directory for your platform
+- **Environment Detection**: Automatically detects if running in Docker, Windows, or Unix-like systems
+
+## Utility Module
+
+The `utils.py` module provides centralized utilities for the entire application:
+
+- **Path Management**: 
+  - Platform-independent path handling for data, logs, and configuration
+  - Automatic directory creation when needed
+  - Functions like `get_data_dir()`, `get_log_dir()`, and `get_log_file()`
+
+- **File Operations**:
+  - Loading and saving JSON files with error handling
+  - Pickle file operations for serializing Python objects
+  - File size and age calculation
+
+- **Data Processing**:
+  - Card name normalization and cleaning
+  - Price extraction and currency conversion
+  - Timestamp formatting
+
+- **HTTP and Networking**:
+  - Safe request handling with exponential backoff
+  - Rate limiting decorators
+  - Configurable retry logic
+
+- **Date and Time**:
+  - Next scheduled update calculation
+  - Human-readable timestamp formatting
+  - File age calculation
+
+## Data Storage
+
+Database files are stored in the data directory:
+- Windows: `.\data\` (relative to the application directory)
+- Linux/Docker: `/app/data/` (when running in Docker)
+
+The app includes:
+- `scraped_cards.json`: Outland.no inventory data
+- `card_prices.json`: Scryfall price data
+- `LegendaryCreatures.json`: list of legendary creatures
+
+When using Docker, you can mount a volume to this directory to persist the data between container restarts.
+
+## Automated Updates
+
+The application is configured to automatically update both databases every Sunday at 1:00 AM. The first time you run the application, it will automatically start an initial database update in the background.
+
+You can also manually trigger updates from the command line:
+
 ```bash
-python app.py
+# Update all databases
+python update_databases.py all
+
+# Update only Outland database
+python update_databases.py outland
+
+# Update only Scryfall database
+python update_databases.py scryfall
 ```
 
-## Usage
+## Logs
 
-### Web Interface
-1. Open your browser and navigate to `http://localhost:5000`
-2. Use the Commander Search to find cards for your deck:
-   - Paste an EDHRec commander URL
-   - Select budget level (Any/Budget/Expensive)
-   - Set maximum price and card limit
-   - Click Search
+Logs are stored in the logs directory:
+- Windows: `.\data\logs\` (relative to the application directory)
+- Linux/Docker: `/app/data/logs/` (when running in Docker)
 
-3. Use the Underpriced Cards feature to find deals:
-   - Click "Find Underpriced Cards" to see current deals
-   - Sort results by savings, price, or name
-   - Hover over cards to see full card images
+Log files include:
+- `app.log`: Main application logs
+- `outlandMTG_database.log`: Outland database scraper logs
+- `scryfall_prices.log`: Scryfall price fetcher logs
+- `database_updates.log`: Database update process logs
+- `access.log`: Gunicorn access logs
+- `error.log`: Gunicorn error logs
+- `startup.log`: Application startup information
 
-### Database Updates
-- Click "Update Outland Database" to refresh local retailer prices
-- Click "Update Scryfall Prices" to refresh international market prices
-- The interface will warn you if databases are more than 7 days old
+### Viewing Logs
 
-## Files
-- `app.py`: Flask web application
-- `EDH_search.py`: EDHRec integration and card searching
-- `outlandMTG_database.py`: Outland.no scraper
-- `scryfall_prices.py`: Scryfall price fetcher
-- `underpriced_cards.py`: Price comparison logic
-- `templates/index.html`: Web interface
+The application comes with a log viewing utility that works on both Windows and Unix-based systems:
 
-## Tips
-- Run database updates during off-peak hours to avoid rate limiting
-- The budget filter on EDHRec URLs can significantly affect card recommendations
-- Card prices are converted using current exchange rates
-- Hover over cards to see full card images and details
+```bash
+# List all available log files
+python view_logs.py
+
+# View the last 100 lines of a specific log file
+python view_logs.py app.log
+
+# View the last 50 lines of the error log
+python view_logs.py error.log --lines 50
+
+# View the entire log file
+python view_logs.py database_updates.log --lines 0
+```
+
+### Logging Features
+
+The application uses a centralized logging configuration with the following features:
+
+- **Log Rotation**: Logs are automatically rotated when they reach 10MB, with 5 backup files kept
+- **Minimal Console Output**: Only warnings and errors are shown in the console by default
+- **Detailed File Logs**: Complete logs are stored in files for debugging
+- **Module-specific Logs**: Each component writes to its own log file for easier troubleshooting
+
+You can adjust logging levels in `log_config.py` if needed:
+- `DEFAULT_LOG_LEVEL`: Controls logging detail in files (default: INFO)
+- `DEFAULT_CONSOLE_LEVEL`: Controls logging detail in console (default: WARNING)
+
+## API Endpoints
+
+- `GET /`: Home page
+- `GET /health`: Health check endpoint
+- `GET /database_status`: Database status information
+- `GET /search_commanders`: Search for commanders
+- `POST /search_commander`: Search for cards for a specific commander
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is available under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a list of changes and version history.

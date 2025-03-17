@@ -1,10 +1,41 @@
 import json
+import os
+import log_config
+import utils
+from pathlib import Path
+
+# Configure logger for this module
+logger = log_config.get_logger(__name__, 'underpriced_cards.log')
 
 def load_json(file_path):
-    with open(file_path, 'r') as file:
-        return json.load(file)
+    """Load a JSON file from the data directory or a direct path."""
+    # Convert to Path object if it's a string
+    if isinstance(file_path, str):
+        file_path = utils.get_data_dir() / file_path
+    
+    logger.info(f"Loading data from: {file_path}")
+    
+    try:
+        with open(file_path, 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        logger.error(f"File not found: {file_path}")
+        raise
+    except json.JSONDecodeError:
+        logger.error(f"Invalid JSON in file: {file_path}")
+        raise
 
-def find_underpriced_cards(scryfall_data_path="card_prices.json", outland_data_path="scraped_cards.json", threshold=2):
+def find_underpriced_cards(scryfall_data_path=None, outland_data_path=None, threshold=2):
+    # Set default paths
+    data_dir = utils.get_data_dir()
+    if not scryfall_data_path:
+        scryfall_data_path = data_dir / "card_prices.json"
+    if not outland_data_path:
+        outland_data_path = data_dir / "scraped_cards.json"
+        
+    logger.info(f"Finding underpriced cards using Scryfall data: {scryfall_data_path}")
+    logger.info(f"Finding underpriced cards using Outland data: {outland_data_path}")
+    
     scryfall_data = load_json(scryfall_data_path)
     outland_data = load_json(outland_data_path)
 
@@ -49,13 +80,13 @@ def find_underpriced_cards(scryfall_data_path="card_prices.json", outland_data_p
     
     # Display or further process the most underpriced cards
     for card in underpriced_cards:
-        print("-" * 30)
-        print(f"Name: {card['name']}")
-        print(f"Outland Price (NOK): {card['outland_price_nok']}")
-        print(f"Scryfall Price (USD): {card['lowest_scryfall_price_usd']}")
-        print(f"Price Difference (USD): {card['price_difference_usd']}")
-        print(f"Store URL: {card['store_url']}")
-        print("-" * 30)
+        logger.info("-" * 30)
+        logger.info(f"Name: {card['name']}")
+        logger.info(f"Outland Price (NOK): {card['outland_price_nok']}")
+        logger.info(f"Scryfall Price (USD): {card['lowest_scryfall_price_usd']}")
+        logger.info(f"Price Difference (USD): {card['price_difference_usd']}")
+        logger.info(f"Store URL: {card['store_url']}")
+        logger.info("-" * 30)
 
-
+    logger.info(f"Found {len(underpriced_cards)} underpriced cards with threshold {threshold}")
     return underpriced_cards
